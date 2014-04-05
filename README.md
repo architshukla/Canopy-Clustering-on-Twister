@@ -1,4 +1,4 @@
 Canopy Clustering on Twister (Java)
 ===================================
 
-This project implements the caopy clustering algorithm on [Twister - Iterative MapReduce](http://www.iterativemapreduce.org/).
+This project implements the canopy clustering algorithm on [Twister - Iterative MapReduce](http://www.iterativemapreduce.org/).
