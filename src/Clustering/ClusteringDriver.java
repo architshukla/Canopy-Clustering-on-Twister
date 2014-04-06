@@ -1,60 +1,33 @@
 package Clustering;
 
 import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.FileReader;
+
+import java.util.ArrayList;
 
 import cgl.imr.base.TwisterMonitor;
 import cgl.imr.base.impl.JobConf;
 import cgl.imr.client.TwisterDriver;
-import cgl.imr.types.DoubleVectorData;
 
-/**
- * Implements K-means clustering algorithm using MapReduce programming model.
- * <p>
- * <code>
- * K-means Clustering Algorithm for MapReduce
- * 	Do
- * 	Broadcast Cn 
- * 	[Perform in parallel] the map() operation
- * 	for each Vi
- * 		for each Cn,j
- * 	Dij <= Euclidian (Vi,Cn,j)
- * 	Assign point Vi to Cn,j with minimum Dij		
- * 	for each Cn,j
- * 		Cn,j <=Cn,j/K
- * 	
- * 	[Perform Sequentially] the reduce() operation
- * 	Collect all Cn
- * 	Calculate new cluster centers Cn+1
- * 	Diff<= Euclidian (Cn, Cn+1)
- * 	while (Diff <THRESHOLD)
-	 * </code>
- * <p>
- * The MapReduce algorithm we used is shown below. (Assume that the input is
- * already partitioned and available in the compute nodes). In this algorithm,
- * Vi refers to the ith vector, Cn,j refers to the jth cluster center in nth
- * iteration, Dij refers to the Euclidian distance between ith vector and jth
- * cluster center, and K is the number of cluster centers.
- * 
- * @author Jaliya Ekanayake (jaliyae@gmail.com)
- */
+import types.DataPoint;
+import types.DataPointVector;
+
 public class ClusteringDriver {
 
-	public static String DATA_FILE_SUFFIX = ".txt";
-	public static int NUM_LOOPS = 16;
-	public static String PROP_VEC_DATA_FILE = "prop_vec_data_file";
-	public static int THRESHOLD = 1;
+	public static String canopyCentersFileLocation = "cccenters/canopycenters.txt";
 
 	/**
-	 * Main program to run K-means clustering.
+	 * Main program to run Canopy Clustering.
 	 * 
 	 * @param args
 	 * @throws Exception
 	 */
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args)
+	throws Exception {
 		if (args.length != 3) {
-			String errorReport = "KMeansClustering: the Correct arguments are \n"
-					+ "java cgl.imr.samples.kmeans.KmeansClustering "
-					+ "<centroid file> <num map tasks> <partition file>";
+			String errorReport = "CanopyClustering: the Correct arguments are \n"
+					+ "clustering.ClusteringDriver <centroid file> <num map tasks> <partition file>";
 			System.out.println(errorReport);
 			System.exit(0);
 		}
@@ -97,9 +70,15 @@ public class ClusteringDriver {
 		TwisterDriver driver = new TwisterDriver(jobConf);
 		driver.configureMaps(partitionFile);
 
-		DoubleVectorData cData = new DoubleVectorData();
+		DataPointVector centroids = new DataPointVector();
+
 		try {
-			cData.loadDataFromTextFile(centroidFile);
+			BufferedReader reader = new BufferedReader(new FileReader(centroidFile));
+			String line = null;
+			while((line = reader.readLine()) != null) {
+				centroids.add(new DataPoint(line));
+			}
+			System.out.println("Centroids: " + centroids);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -108,19 +87,19 @@ public class ClusteringDriver {
 		int loopCount = 0;
 		TwisterMonitor monitor = null;
 
-		@SuppressWarnings("unused")
+		// @SuppressWarnings("unused")
 		// Use this with the while loop.
 		//for (loopCount = 0; loopCount < NUM_LOOPS; loopCount++) {
 		
 		//Main iteration for K-Means clustering
 		boolean complete = false;
 		while (!complete) {		
-			monitor = driver.runMapReduceBCast(cData);
+			monitor = driver.runMapReduceBCast(centroids);
 			monitor.monitorTillCompletion();
-			DoubleVectorData newCData = ((ClusteringCombiner) driver.getCurrentCombiner()).getResults();
-			totalError = getError(cData, newCData);
-			cData = newCData;
-			if (totalError < THRESHOLD) {
+			DataPointVector newCentroids = ((ClusteringCombiner) driver.getCurrentCombiner()).getResults();
+			totalError = getError(centroids, newCentroids);
+			centroids = newCentroids;
+			if (totalError < DataPoint.CONVERGENCE_THRESHOLD) {
 				complete = true;
 				break;
 			}			
@@ -128,55 +107,18 @@ public class ClusteringDriver {
 		}
 		// Print the test statistics
 		double timeInSeconds = ((double) (System.currentTimeMillis() - beforeTime)) / 1000;
-		double[][] selectedCentroids = cData.getData();
-		int numCentroids = cData.getNumData();
-		int vecLen = cData.getVecLen();
-
-		for (int i = 0; i < numCentroids; i++) {
-			for (int j = 0; j < vecLen; j++) {
-				System.out.print(selectedCentroids[i][j] + " , ");
-			}
-			System.out.println();
-		}
-		System.out.println("Total Time for kemeans : " + timeInSeconds);
+		System.out.println("Selected Centroids: " + centroids);
+		System.out.println("Total Time for Canopy Clustering : " + timeInSeconds);
 		System.out.println("Total loop count : " + (loopCount));
-		// Close the TwisterDriver. This will close the broker connections and
+		// Close the TwisterDriver. This will close the broker connections.
 		driver.close();
 	}
 
-	private double getError(DoubleVectorData cData, DoubleVectorData newCData) {
+	private double getError(DataPointVector cData, DataPointVector newCData) {
 		double totalError = 0;
-		int numCentroids = cData.getNumData();
-
-		double[][] centroids = cData.getData();
-		double[][] newCentroids = newCData.getData();
-
-		for (int i = 0; i < numCentroids; i++) {
-			totalError += getEuclidean(centroids[i], newCentroids[i], cData
-					.getVecLen());
+		for(int i = 0; i < cData.size(); i++) {
+			totalError += cData.get(i).complexDistance(newCData.get(i));
 		}
 		return totalError;
-	}
-
-	/**
-	 * Calculates the square value of the Euclidean distance. Although K-means
-	 * clustering typically uses Euclidean distance, the use of its square value
-	 * does not change the algorithm or the final results. Calculation of square
-	 * root is costly. square value
-	 * 
-	 * @param v1
-	 *            - First vector.
-	 * @param v2
-	 *            - Second vector.
-	 * @param vecLen
-	 *            - Length of the vectors.
-	 * @return - Square of the Euclidean distances.
-	 */
-	private double getEuclidean(double[] v1, double[] v2, int vecLen) {
-		double sum = 0;
-		for (int i = 0; i < vecLen; i++) {
-			sum += ((v1[i] - v2[i]) * (v1[i] - v2[i]));
-		}
-		return sum;
 	}
 }

@@ -19,4 +19,5 @@ cd $TWISTER_HOME/bin
 
 cd $PWD
 
-java -cp $cp:dist/canopyclustering_twister.jar Clustering.ClusteringDriver $TWISTER_HOME/bin/init_clusters.txt 80 $TWISTER_HOME/bin/kmeans.pf
+# java -cp $cp:dist/canopyclustering_twister.jar Clustering.ClusteringDriver $TWISTER_HOME/bin/init_clusters.txt 80 $TWISTER_HOME/bin/kmeans.pf
+java -cp $cp:dist/canopyclustering_twister.jar Clustering.ClusteringDriver $TWISTER_HOME/bin/centroids.txt 16 $TWISTER_HOME/bin/cc.pf

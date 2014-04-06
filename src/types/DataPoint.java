@@ -1,24 +1,85 @@
 /**
   * @author Archit Shukla
-  * @version 1.0
   */
-package DataPoint;
+
+package types;
 
 import java.io.IOException;
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.ByteArrayOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.DataOutputStream;
+import java.io.DataInputStream;
 
-import org.apache.hadoop.io.WritableComparable;
+import cgl.imr.base.Value;
+import cgl.imr.base.Key;
+import cgl.imr.base.SerializationException;
 
 /**
   * A class to model a simple [year, temperature] Data Set.
   */
-public class DataPoint implements WritableComparable<DataPoint>
+public class DataPoint implements Value, Key
 {
+	public byte[] getBytes() 
+	throws SerializationException {
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		outputStream.write(year);
+		outputStream.write(temperature);
+		outputStream.write(count);
+		return outputStream.toByteArray();
+	}
+
+	public void writeBytesToDataOutputStream(DataOutputStream dOutputStream) 
+	throws IOException {
+		dOutputStream.writeInt(year);
+		dOutputStream.writeInt(temperature);
+		dOutputStream.writeInt(count);
+	}
+
+	public void fromBytes(byte[] bytes)
+	throws SerializationException {
+		ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
+		year = inputStream.read();
+		temperature = inputStream.read();
+		count = inputStream.read();
+	}
+
+	public static DataPoint readFromDataInputStream(DataInputStream dInputStream) 
+	throws IOException {
+		int y = dInputStream.readInt();
+		int t = dInputStream.readInt();
+		int c = dInputStream.readInt();
+		DataPoint dataPoint = new DataPoint();
+		dataPoint.year = y;
+		dataPoint.temperature = t;
+		dataPoint.count = c;
+		return dataPoint;
+	}
+
+	public void sumDataPoint(DataPoint dataPoint) {
+		year += dataPoint.year;
+		temperature += dataPoint.temperature;
+	}
+
+	public void averageDataPoint() {
+		if(count == 0) {
+			return;
+		}
+		year /= count;
+		temperature /= count;
+	}
+
+	public void incrementCounter() {
+		count++;
+	}
+
 	/**
 	  * Attributes for the class: year and temperature.
 	  */
-	public int year, temperature;
+	private int year, temperature;
+
+	public int count;
 
 	/**
 	  * T1 and T2 thresholds for this Data Set.
@@ -35,21 +96,18 @@ public class DataPoint implements WritableComparable<DataPoint>
 	public static long NUM_ITERATIONS = 0;
 
 	/**
-	  * <b>Default Constructor. </b><br>
-	  * <b>Parameters:</b>	None <br>
-	  * <b>Returns:</b>		Nothing <br/><br>
-	  *
+	  * Default Constructor.
 	  * Sets the year and temperature values to 0.
 	  */
 	public DataPoint()
 	{
-		year = temperature = 0;
+		year = temperature = count = 0;
 	}
 
 	/**
-	  * <b>Parameterized Constructor (String). </b><br>
-	  * <b>Parameters:</b>	String dataPointString, a string representation of an object of the class. <br>
-	  * <b>Returns:</b>		Nothing <br><br>
+	  * Parameterized Constructor (String).
+	  * @param dataPoint
+	  * - StringString representation of an object of the class.
 	  *
 	  * Parses the input string and sets the appropriate fields of the object. Inverse of toString() method.
 	  */
@@ -58,12 +116,13 @@ public class DataPoint implements WritableComparable<DataPoint>
 		int commaPosition = dataPointString.indexOf(",");
 		year = Integer.parseInt(dataPointString.substring(0, commaPosition));
 		temperature = Integer.parseInt(dataPointString.substring(commaPosition + 1));
+		count = 0;
 	}
 
 	/**
-	  * <b>Copy Constructor (DataPoint). </b><br>
-	  * <b>Parameters:</b>	DataPoint dataPoint, the reference Data Point whose fields are to be copied into this object <br>
-	  * <b>Returns:</b>		Nothing <br><br>
+	  * Copy Constructor (DataPoint).
+	  * @param dataPoint
+	  * - Reference Data Point whose fields are to be copied into this object <br>
 	  *
 	  * Sets this object's fields to the corresponding fields of the passed object.
 	  */
@@ -71,50 +130,7 @@ public class DataPoint implements WritableComparable<DataPoint>
 	{
 		year = dataPoint.year;
 		temperature = dataPoint.temperature;
-	}
-
-	/**
-	  * <b>write method of the Writable Interface. </b><br>
-	  * <b>Parameters:</b>	DataOutput out, to write the fields of this object serially <br>
-	  * <b>Returns:</b>		Nothing <br><br>
-	  *
-	  * Serializes the object by writing the fields in a specific serial order to out.
-	  */
-	public void write(DataOutput out)
-		throws IOException
-	{
-		out.writeInt(year);
-		out.writeInt(temperature);
-	}
-
-	/**
-	  * <b>readFields method of the Writable Interface. </b><br>
-	  * <b>Parameters:</b> 	DataInput in, to read the fields of this object serially <br>
-	  * <b>Returns:</b>		Nothing <br><br>
-	  *
-	  * Serially reads the fields of the object in the order they were written.
-	  */
-	public void readFields(DataInput in)
-		throws IOException
-	{
-		year = in.readInt();
-		temperature = in.readInt();
-	}
-
-	/**
-	  * <b>Read method. </b><br>
-	  * <b>Parameters:</b>	DataInput in, to read the fields of an object serially <br>
-	  * <b>Returns:</b>		Object of type DataPoint <br>
-	  * <b>Uses:</b>		void readFields(DataInput in) <br><br>
-	  *
-	  * Serially reads the fields of the object in the order they were written into another object and returns it.
-	  */
-	public DataPoint read(DataInput in)
-		throws IOException
-	{
-		DataPoint dataPoint = new DataPoint();
-		dataPoint.readFields(in);
-		return dataPoint;	
+		count = dataPoint.count;
 	}
 
 	/**
@@ -181,8 +197,8 @@ public class DataPoint implements WritableComparable<DataPoint>
 	  */
 	public double complexDistance(DataPoint dataPoint)
 	{
-		return Math.sqrt(Math.abs((year - dataPoint.year) * (year - dataPoint.year) 
-				+ (temperature - dataPoint.temperature) * (temperature - dataPoint.temperature)));
+		return Math.abs((year - dataPoint.year) * (year - dataPoint.year) 
+				+ (temperature - dataPoint.temperature) * (temperature - dataPoint.temperature));
 	}
 
 	/**
@@ -227,30 +243,5 @@ public class DataPoint implements WritableComparable<DataPoint>
 	public int hashCode()
 	{
 		return (17 * year + 31 * temperature);
-	}
-
-	/**
-	  * <b>Method to return average of Data Points passed to it. </b><br>
-	  * <b>Parameters:</b>	Iterable<DataPoint> dataPoints, an iterable list of Data Points to be averaged. <br>
-	  * <b>Returns:</b>		DataPoint, the average Data Point <br><br>
-	  *
-	  * This function traverses the Tterable list of Data Points passed to it.
-	  * The average of all these points is found out and returned.
-	  */
-	public static DataPoint getAverageDataPoint(Iterable<DataPoint> dataPoints)
-	{
-		double yearSum = 0;
-		double temperatureSum = 0;
-		long count = 0;
-		for(DataPoint dataPoint: dataPoints)
-		{
-			yearSum += dataPoint.year;
-			temperatureSum += dataPoint.temperature;
-			count++;
-		}
-		DataPoint averageDataPoint =  new DataPoint();
-		averageDataPoint.year = (int) (yearSum/count);
-		averageDataPoint.temperature = (int) (temperatureSum/count);
-		return averageDataPoint;
 	}
 }

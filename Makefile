@@ -4,11 +4,11 @@ BIN=bin
 DIST=dist
 JARFILENAME=canopyclustering_twister.jar
 TWISTERJAR=$(TWISTER_HOME)/lib/Twister-0.9.jar
-# UUIDJAR=$(TWISTER_HOME)/lib/jug-asl-2.0.0.jar
 
 # Folders in SRC
 DATAOPERATIONS=DataOperations
 CLUSTERING=Clustering
+TYPES=types
 
 # Build all
 all:	build_dataoperations build_clustering
@@ -23,6 +23,9 @@ all:	build_dataoperations build_clustering
 	mkdir -p $(BIN)/$(CLUSTERING)
 	mv $(SRC)/$(CLUSTERING)/*.class $(BIN)/$(CLUSTERING)/
 
+	mkdir -p $(BIN)/$(TYPES)
+	mv $(SRC)/$(TYPES)/*.class $(BIN)/$(TYPES)/
+
 	jar -cvf $(JARFILENAME) -C $(BIN) .
 	mv $(JARFILENAME) $(DIST)
 
@@ -32,11 +35,15 @@ build_dataoperations:	$(SRC)/$(DATAOPERATIONS)/SplitData.java
 build_clustering:	$(SRC)/$(CLUSTERING)/ClusteringDriver.java \
 					$(SRC)/$(CLUSTERIClusteringMapperTask.java \
 					$(SRC)/$(CLUSTERIClusteringReducerTask.java \
-					$(SRC)/$(CLUSTERING)/ClusteringCombiner.java
+					$(SRC)/$(CLUSTERING)/ClusteringCombiner.java \
+					$(SRC)/$(TYPES)/DataPoint.java \
+					$(SRC)/$(TYPES)/DataPointVector.java
 	javac -cp $(TWISTERJAR) $(SRC)/$(CLUSTERING)/ClusteringDriver.java \
 		$(SRC)/$(CLUSTERING)/ClusteringMapper.java \
 		$(SRC)/$(CLUSTERING)/ClusteringReducer.java \
 		$(SRC)/$(CLUSTERING)/ClusteringCombiner.java \
+		$(SRC)/$(TYPES)/DataPoint.java \
+		$(SRC)/$(TYPES)/DataPointVector.java
 
 # Clean
 clean:	clean_allcassfiles
