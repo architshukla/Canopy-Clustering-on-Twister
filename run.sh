@@ -15,9 +15,8 @@ for i in ${TWISTER_HOME}/apps/*.jar;
 done
 
 cd $TWISTER_HOME/bin
-./twister.sh cpj $DIR/dist/canopyclustering_twister.jar
+./twister.sh cpj $DIR/dist/*.jar
 
 cd $PWD
 
-# java -cp $cp:dist/canopyclustering_twister.jar Clustering.ClusteringDriver $TWISTER_HOME/bin/init_clusters.txt 80 $TWISTER_HOME/bin/kmeans.pf
-java -cp $cp:dist/canopyclustering_twister.jar Clustering.ClusteringDriver $TWISTER_HOME/bin/centroids.txt 16 $TWISTER_HOME/bin/cc.pf
+java -cp $cp:dist/*.jar clustering.ClusteringDriver $TWISTER_HOME/bin/centroids.txt 256 $TWISTER_HOME/bin/cc.pf

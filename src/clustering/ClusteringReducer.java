@@ -1,4 +1,4 @@
-package Clustering;
+package clustering;
 
 import java.util.List;
 

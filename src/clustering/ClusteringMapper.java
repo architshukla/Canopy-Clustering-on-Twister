@@ -1,4 +1,4 @@
-package Clustering;
+package clustering;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -31,14 +31,8 @@ public class ClusteringMapper implements MapTask {
 	private DataPointVector canopyCenters;
 
 	public void close() throws TwisterException {
-		// TODO Auto-generated method stub
 	}
 
-	/**
-	 * Loads the vector data from a file. Since the map tasks are cached
-	 * across iterations, we only need to load this data  once for all
-	 * the iterations.
-	 */
 	public void configure(JobConf jobConf, MapperConf mapConf)	throws TwisterException {
 		// Allocate memory for Data Set and Canopy Centers
 		data = new DataPointVector[2];
@@ -78,20 +72,6 @@ public class ClusteringMapper implements MapTask {
 		}
 	}
 
-	// public double getEuclidean2(double[] v1, double[] v2, int vecLen) {
-	// 	double sum = 0;
-	// 	for (int i = 0; i < vecLen; i++) {
-	// 		sum += ((v1[i] - v2[i]) * (v1[i] - v2[i]));
-	// 	}
-	// 	return sum; // No need to use the sqrt.
-	// }
-
-	/**
-	 * Map function for the K-means clustering. Calculates the Euclidean
-	 * distance between the data points and the given cluster centers. Next it
-	 * calculates the partial cluster centers as well.
-	 */
-	
 	public void map(MapOutputCollector collector, Key key, Value val)
 	throws TwisterException {
 		// Allocate memory for k-Means Centroids and HashMap
@@ -121,37 +101,6 @@ public class ClusteringMapper implements MapTask {
 					canopyCenterKCentroidsMap.put(canopyCenters.get(i), centroidList);
 			}
 
-		// 	DoubleVectorData vectorData = new DoubleVectorData();
-		// double[][] data = vectorData.getData();
-		// DoubleVectorData cData = new DoubleVectorData();
-		// 	double[][] centroids = cData.getData();
-
-		// 	int numCentroids = cData.getNumData();
-		// 	int numData = vectorData.getNumData();
-		// 	int vecLen = vectorData.getVecLen();
-			// double newCentroids[][] = new double[1][0 + 1];
-
-		// 	for (int i = 0; i < numData; i++) {
-		// 		double min = 0;
-		// 		double dis = 0;
-		// 		int minCentroid = 0;
-		// 		for (int j = 0; j < numCentroids; j++) {
-		// 			dis = getEuclidean2(data[i], centroids[j], vecLen);
-		// 			if (j == 0) {
-		// 				min = dis;
-		// 			}
-		// 			if (dis < min) {
-		// 				min = dis;
-		// 				minCentroid = j;
-		// 			}
-		// 		}
-
-		// 		for (int k = 0; k < vecLen; k++) {
-		// 			newCentroids[minCentroid][k] += data[i][k];
-		// 		}
-		// 		newCentroids[minCentroid][vecLen] += 1;
-		// 	}
-
 			DataPointVector newCentroids = new DataPointVector(kCentroids.size());
 
 			for(int k = 0; k < data[CANOPY_CENTER].size(); k++) {
@@ -162,12 +111,12 @@ public class ClusteringMapper implements MapTask {
 					// Set the minimum distance to the maximum value a double can hold and create
 					double minDistance = Double.MAX_VALUE;
 					int offset = -1;
-		
+
 					for(int i = 0; i < centroids.size(); i++)
 					{
 						DataPoint centroid = centroids.get(i);
 						double distance = dataPoint.complexDistance(centroid);
-		
+
 						// Check if the distance is less than the minimum distance found so far
 						if(distance < minDistance)
 						{
@@ -175,11 +124,16 @@ public class ClusteringMapper implements MapTask {
 							offset = i;
 						}
 					}
-					newCentroids.sumDataPointToElement(offset, dataPoint);
-					newCentroids.get(offset).incrementCounter();
+
+					for(int j = 0; j < newCentroids.size(); j++) {
+						if(centroids.get(offset).equals(kCentroids.get(j))) {
+							newCentroids.sumDataPointToElement(j, dataPoint);
+							newCentroids.get(j).incrementCounter();
+						}
+					}
 				}
 			}
-			
+
 			collector.collect(new StringKey("kmeans-map-to-reduce-key"),
 					new BytesValue(newCentroids.getBytes()));
 

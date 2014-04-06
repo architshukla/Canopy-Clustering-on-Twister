@@ -1,4 +1,4 @@
-package Clustering;
+package clustering;
 
 import java.io.IOException;
 import java.io.BufferedReader;
@@ -43,7 +43,7 @@ public class ClusteringDriver {
 			double endTime = System.currentTimeMillis();
 			System.out
 					.println("------------------------------------------------------");
-			System.out.println("Kmeans clustering took "
+			System.out.println("Canopy Clustering took "
 					+ (endTime - beginTime) / 1000 + " seconds.");
 			System.out
 					.println("------------------------------------------------------");
@@ -59,7 +59,7 @@ public class ClusteringDriver {
 		int numReducers = 1; // we need only one reducer for the above
 
 		// JobConfigurations
-		JobConf jobConf = new JobConf("kmeans-map-reduce");
+		JobConf jobConf = new JobConf("canopyclustering-map-reduce");
 		jobConf.setMapperClass(ClusteringMapper.class);
 		jobConf.setReducerClass(ClusteringReducer.class);
 		jobConf.setCombinerClass(ClusteringCombiner.class);

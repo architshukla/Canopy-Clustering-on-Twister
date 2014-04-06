@@ -1,4 +1,4 @@
-package DataOperations;
+package dataops;
 
 /**
   * @author Archit Shukla
