@@ -1,4 +1,7 @@
-package clustering;
+/**
+  * @author Archit Shukla
+  */
+package ccimr.clustering;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -11,7 +14,7 @@ import cgl.imr.base.Value;
 import cgl.imr.base.impl.JobConf;
 import cgl.imr.types.BytesValue;
 
-import types.DataPointVector;
+import ccimr.types.DataPointVector;
 
 public class ClusteringCombiner implements Combiner {
 

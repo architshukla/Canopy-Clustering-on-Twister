@@ -1,4 +1,7 @@
-package clustering;
+/**
+  * @author Archit Shukla
+  */
+package ccimr.clustering;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -18,8 +21,8 @@ import cgl.imr.data.file.FileData;
 import cgl.imr.types.BytesValue;
 import cgl.imr.types.StringKey;
 
-import types.DataPoint;
-import types.DataPointVector;
+import ccimr.types.DataPoint;
+import ccimr.types.DataPointVector;
 
 public class ClusteringMapper implements MapTask {
 
@@ -127,12 +130,15 @@ public class ClusteringMapper implements MapTask {
 
 					for(int j = 0; j < newCentroids.size(); j++) {
 						if(centroids.get(offset).equals(kCentroids.get(j))) {
+							// System.out.println(centroids.get(j));
 							newCentroids.sumDataPointToElement(j, dataPoint);
 							newCentroids.get(j).incrementCounter();
 						}
 					}
 				}
 			}
+
+			// System.out.println("NCDOne: " + newCentroids);
 
 			collector.collect(new StringKey("kmeans-map-to-reduce-key"),
 					new BytesValue(newCentroids.getBytes()));

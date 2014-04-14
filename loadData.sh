@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-java -cp dist/*.jar dataops.SplitData $1 $2 $3 $4
+java -cp dist/*.jar ccimr.dataops.SplitData $1 size $2 $3 $4
 
 OUTPUTFOLDER=output
 FILEFILTER=input

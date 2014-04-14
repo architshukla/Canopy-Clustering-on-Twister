@@ -6,9 +6,10 @@ JARFILENAME=canopyclustering_twister.jar
 TWISTERJAR=$(TWISTER_HOME)/lib/Twister-0.9.jar
 
 # Folders in SRC
-DATAOPERATIONS=dataops
-CLUSTERING=clustering
-TYPES=types
+COMMONFOLDERS=ccimr
+DATAOPERATIONS=$(COMMONFOLDERS)/dataops
+CLUSTERING=$(COMMONFOLDERS)/clustering
+TYPES=$(COMMONFOLDERS)/types
 
 # Build all
 all:	build_dataoperations build_clustering

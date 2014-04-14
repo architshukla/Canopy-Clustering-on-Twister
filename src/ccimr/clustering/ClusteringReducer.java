@@ -1,4 +1,7 @@
-package clustering;
+/**
+  * @author Archit Shukla
+  */
+package ccimr.clustering;
 
 import java.util.List;
 
@@ -12,7 +15,8 @@ import cgl.imr.base.impl.JobConf;
 import cgl.imr.base.impl.ReducerConf;
 import cgl.imr.types.BytesValue;
 
-import types.DataPointVector;
+import ccimr.types.DataPoint;
+import ccimr.types.DataPointVector;
 
 public class ClusteringReducer implements ReduceTask {
 
@@ -35,7 +39,11 @@ public class ClusteringReducer implements ReduceTask {
 			DataPointVector tmpCentroids = new DataPointVector();
 			tmpCentroids.fromBytes(val.getBytes());
 
-			DataPointVector newCentroids = new DataPointVector(tmpCentroids.size());
+			DataPointVector newCentroids = new DataPointVector();
+			long temp[][] = new long[tmpCentroids.size()][3];
+			for(int i = 0; i < tmpCentroids.size(); i++) {
+				temp[i][0] = temp[i][1] = temp[i][2] = 0;
+			}
 			int numMapTasks = values.size();
 
 			for(int i = 0; i < numMapTasks; i++) {
@@ -43,14 +51,22 @@ public class ClusteringReducer implements ReduceTask {
 				mapperCentroids = new DataPointVector();
 				mapperCentroids.fromBytes(val.getBytes());
 
-				for(int j = 0; j < newCentroids.size(); j++) {
-					newCentroids.sumDataPointToElement(j, mapperCentroids.get(j));
-					newCentroids.get(j).count += mapperCentroids.get(j).count;
+				for(int j = 0; j < tmpCentroids.size(); j++) {
+					temp[j][0] += mapperCentroids.get(j).year;
+					temp[j][1] += mapperCentroids.get(j).temperature;
+					temp[j][2] += mapperCentroids.get(j).count;
+					// newCentroids.sumDataPointToElement(j, mapperCentroids.get(j));
+					// newCentroids.get(j).count += mapperCentroids.get(j).count;
 				}
 			}
 
-			for(int i = 0; i < newCentroids.size(); i++) {
-				newCentroids.get(i).averageDataPoint();
+			for(int i = 0; i < tmpCentroids.size(); i++) {
+				if(temp[i][2]!=0) {
+					temp[i][0] /= temp[i][2];
+					temp[i][1] /= temp[i][2];
+					newCentroids.add(new DataPoint(temp[i][0]+","+temp[i][1]));
+				}
+				// newCentroids.get(i).averageDataPoint();
 			}
 
 			collector.collect(key, new BytesValue(newCentroids.getBytes()));

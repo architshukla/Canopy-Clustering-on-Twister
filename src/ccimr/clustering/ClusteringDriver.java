@@ -1,4 +1,7 @@
-package clustering;
+/**
+  * @author Archit Shukla
+  */
+package ccimr.clustering;
 
 import java.io.IOException;
 import java.io.BufferedReader;
@@ -10,8 +13,8 @@ import cgl.imr.base.TwisterMonitor;
 import cgl.imr.base.impl.JobConf;
 import cgl.imr.client.TwisterDriver;
 
-import types.DataPoint;
-import types.DataPointVector;
+import ccimr.types.DataPoint;
+import ccimr.types.DataPointVector;
 
 public class ClusteringDriver {
 
@@ -87,10 +90,6 @@ public class ClusteringDriver {
 		int loopCount = 0;
 		TwisterMonitor monitor = null;
 
-		// @SuppressWarnings("unused")
-		// Use this with the while loop.
-		//for (loopCount = 0; loopCount < NUM_LOOPS; loopCount++) {
-		
 		//Main iteration for K-Means clustering
 		boolean complete = false;
 		while (!complete) {		
@@ -102,19 +101,19 @@ public class ClusteringDriver {
 			if (totalError < DataPoint.CONVERGENCE_THRESHOLD) {
 				complete = true;
 				break;
-			}			
+			}
 			loopCount++;
 		}
 		// Print the test statistics
 		double timeInSeconds = ((double) (System.currentTimeMillis() - beforeTime)) / 1000;
 		System.out.println("Selected Centroids: " + centroids);
 		System.out.println("Total Time for Canopy Clustering : " + timeInSeconds);
-		System.out.println("Total loop count : " + (loopCount));
+		System.out.println("Total loop count : " + (loopCount + 1));
 		// Close the TwisterDriver. This will close the broker connections.
 		driver.close();
 	}
 
-	private double getError(DataPointVector cData, DataPointVector newCData) {
+	public double getError(DataPointVector cData, DataPointVector newCData) {
 		double totalError = 0;
 		for(int i = 0; i < cData.size(); i++) {
 			totalError += cData.get(i).complexDistance(newCData.get(i));

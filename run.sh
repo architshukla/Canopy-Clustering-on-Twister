@@ -1,5 +1,10 @@
 #! /usr/bin/env bash
 
+if [ $# -ne 1 ]; then
+	echo "Usage: run.sh NUMBER_OF_MAPPERS"
+	exit
+fi
+
 DIR=`pwd`
 
 echo $DIR
@@ -19,4 +24,4 @@ cd $TWISTER_HOME/bin
 
 cd $PWD
 
-java -cp $cp:dist/*.jar clustering.ClusteringDriver $TWISTER_HOME/bin/centroids.txt 256 $TWISTER_HOME/bin/cc.pf
+java -cp $cp:dist/*.jar ccimr.clustering.ClusteringDriver $TWISTER_HOME/bin/centroids.txt $1 $TWISTER_HOME/bin/cc.pf
