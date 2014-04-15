@@ -18,19 +18,22 @@ import cgl.imr.base.SerializationException;
 /**
   * A class to model a simple [year, temperature] Data Set.
   */
-public class DataPoint implements Value, Key
-{
+public class DataPoint implements Value, Key {
 	/**
 	  * Attributes for the class: year and temperature.
 	  */
 	public int year, temperature;
 
+	/**
+	  * Counter used in average calculation for clustering.
+	  */
 	public int count;
 
 	/**
-	  * T1 and T2 thresholds for this Data Set.
+	  * T1 threshold for this Data Set.
 	  */
-	public final static double T1 = 10, T2 = 6;
+	public final static double T1 = 10;
+	public final static double T2 = 6;
 	/**
 	  * Threshold for convergence. A distance value below the specified value denotes the point has converged.
 	  */
@@ -51,9 +54,9 @@ public class DataPoint implements Value, Key
 
 	/**
 	  * Parameterized Constructor (String).
-	  * @param dataPointString String representation of an object of the class.
-	  *
 	  * Parses the input string and sets the appropriate fields of the object. Inverse of toString() method.
+	  *
+	  * @param dataPointString String representation of an object of the class.
 	  */
 	public DataPoint(String dataPointString) {
 		int commaPosition = dataPointString.indexOf(",");
@@ -64,12 +67,11 @@ public class DataPoint implements Value, Key
 
 	/**
 	  * Copy Constructor (DataPoint).
-	  * @param dataPoint Reference Data Point whose fields are to be copied into this object <br>
-	  *
 	  * Sets this object's fields to the corresponding fields of the passed object.
+	  *
+	  * @param dataPoint Reference Data Point whose fields are to be copied into this object <br>
 	  */
-	public DataPoint(DataPoint dataPoint)
-	{
+	public DataPoint(DataPoint dataPoint) {
 		year = dataPoint.year;
 		temperature = dataPoint.temperature;
 		count = dataPoint.count;
@@ -77,92 +79,85 @@ public class DataPoint implements Value, Key
 
 	/**
 	  * compareTo method of.
-	  * @param dataPoint The object to compare this object to <br>
-	  * @return	one among -1, 0 and 1
-	  *
 	  * Compares the fields of two objects to obtain an ordering.
+	  *
+	  * @param dataPoint The object to compare this object to
+	  * @return	one among -1, 0 and 1
 	  */
-	public int compareTo(DataPoint dataPoint)
-	{
+	public int compareTo(DataPoint dataPoint) {
 		return (temperature < dataPoint.temperature ? -1 : 
 			(temperature == dataPoint.temperature ? (year < dataPoint.year ? -1 : (year == dataPoint.year ? 0 : 1)) : 1));
 	}
 
 	/**
 	  * Checks if the distance between two Data Points is within T1.
-	  * @param dataPoint The object to compare this object to. <br>
-	  * @return boolean
-	  *
 	  * Compares this object with the passed object to check if they are within T1 distance of each other.
 	  * Returns true if they are within T1 distance, false otherwise.
+	  *
+	  * @param dataPoint The object to compare this object to.
+	  * @return boolean
 	  */
-	public boolean withinT1(DataPoint dataPoint)
-	{
+	public boolean withinT1(DataPoint dataPoint) {
 		return (simpleDistance(dataPoint) < T1);
 	}
 
 	/**
 	  * Checks if the distance between two Data Points is within T1.
-	  * @paramdataPoint The object to compare this object to. <br>
-	  * @return boolean
-	  *
 	  * Compares this object with the passed object to check if they are within T2 distance of each other.
 	  * It returns true if they are within T2 distance, false otherwise.
+	  *
+	  * @param dataPoint The object to compare this object to.
+	  * @return boolean
 	  */
-	public boolean withinT2(DataPoint dataPoint)
-	{
+	public boolean withinT2(DataPoint dataPoint) {
 		return (simpleDistance(dataPoint) < T2);
 	}
 
 	/**
 	  * Simple and inexpensive distance metric.
-	  * @param dataPoint The object to compare this object to.
-	  * @return simple distance value.
-	  *
 	  * Finds a simple, cheap distance between two Data Points.
 	  * Used in Canopy Generation phase.
+	  *
+	  * @param dataPoint The object to compare this object to.
+	  * @return simple distance value.
 	  */
-	public long simpleDistance(DataPoint dataPoint)
-	{
+	public long simpleDistance(DataPoint dataPoint) {
 		return Math.abs(temperature - dataPoint.temperature);
 	}
 
 	/**
 	  * Expensive distance metric for clustering.
-	  * @param dataPoint The object to compare this object to.
-	  * @return double A complex distance value.
-	  *
 	  * Finds a complex, more expensive distance between two Data Points.
 	  * Used in Clustering phase.
+	  *
+	  * @param dataPoint The object to compare this object to.
+	  * @return double A complex distance value.
 	  */
-	public double complexDistance(DataPoint dataPoint)
-	{
+	public double complexDistance(DataPoint dataPoint) {
 		return Math.abs((year - dataPoint.year) * (year - dataPoint.year) 
 				+ (temperature - dataPoint.temperature) * (temperature - dataPoint.temperature));
 	}
 
 	/**
 	  * Converts the Data Point to a String.
-	  * @return String
-	  *
 	  * Returns a string representation of this object.
+	  *
+	  * @return String
 	  */
-	public String toString()
-	{
+	public String toString() {
 		return year + "," + temperature;
 	}
 
 	/**
 	  * Overridden equals method of Object.
-	  * @param object The passed object to check for equality <br>
-	  * @return boolean
-	  *
 	  * Returns true if this object and the passed object are the same.
 	  * Similarity conditions depend on the Data Set.
+	  *
+	  * @param object The passed object to check for equality.
+	  * @return boolean.
 	  */
 	@Override
-	public boolean equals(Object object)
-	{
+	public boolean equals(Object object) {
 		if(object == null)
 			return false;
 		DataPoint dataPoint = (DataPoint) object;
@@ -173,20 +168,20 @@ public class DataPoint implements Value, Key
 
 	/**
 	  * Overridden hashCode method of Object Class.
-	  * @return int, the hash code.
-	  *
 	  * Returns a user defined hash code for the object.
+	  *
+	  * @return int, the hash code.
 	  */
 	@Override
-	public int hashCode()
-	{
+	public int hashCode() {
 		return (17 * (int)year + 31 * (int)temperature);
 	}
 
 	/**
 	  * Function to convert DataPoint into a byte array.
+	  *
+	  * @return A byte array corresponding to this object.
 	  * @throws SerializationException
-	  * @return - A byte array corresponding to this object.
 	  */
 	public byte[] getBytes() 
 	throws SerializationException {
@@ -206,8 +201,8 @@ public class DataPoint implements Value, Key
 
 	/**
 	  * Function to write out the object to a DataOutputStream.
-	  * @param dOutputStream
-	  * - DataOutputStream to write the object to.
+	  *
+	  * @param dOutputStream DataOutputStream to write the object to.
 	  * @throws IOException
 	  */
 	public void writeBytesToDataOutputStream(DataOutputStream dOutputStream) 
@@ -219,8 +214,8 @@ public class DataPoint implements Value, Key
 
 	/**
 	  * Function to parse the object from an array of bytes.
-	  * @param bytes
-	  * - Byte array to be parsed to the DataPoint.
+	  *
+	  * @param bytesByte array to be parsed to the DataPoint.
 	  * @throws SerializationException
 	  */
 	public void fromBytes(byte[] bytes)
@@ -236,13 +231,12 @@ public class DataPoint implements Value, Key
 		} catch(IOException e) {
 			e.printStackTrace();
 		}
-		
 	}
 
 	/**
 	  * Function to read in the object from a DataInputStream.
-	  * @param dInputStream
-	  * - DataInputStream to read the object from.
+	  *
+	  * @param dInputStream DataInputStream to read the object from.
 	  * @throws IOException
 	  */
 	public static DataPoint readFromDataInputStream(DataInputStream dInputStream) 
@@ -259,8 +253,8 @@ public class DataPoint implements Value, Key
 
 	/**
 	  * Function to sum values of two DataPoint objects.
-	  * @param dataPoint
-	  * - Other DataPoint to add to this DataPoint.
+	  *
+	  * @param dataPoint Other DataPoint to add to this DataPoint.
 	  */
 	public void sumDataPoint(DataPoint dataPoint) {
 		year += dataPoint.year;

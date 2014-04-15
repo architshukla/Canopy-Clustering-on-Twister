@@ -12,6 +12,9 @@ import java.io.RandomAccessFile;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+/**
+  * Class to split a Data Set containing newline delimited contents into a smaller number of files.
+  */
 public class SplitData {
 	/**
 	  * Holds number of lines in file to split.
@@ -29,16 +32,15 @@ public class SplitData {
 	private static String outputFilePrefix = "input_";
 
 	/**
-	  * Splits input file into a fixed number of smaller files. Executes serially. 
-	  * @param filePath Path to the input file to be split.
-	  * @param numberOfFileSplits Number of output file splits required.
-	  * @throws IOException
-	  *
+	  * Splits input file into a fixed number of smaller files. Executes serially.
 	  * The method checks if the output directory exists. If it does, an IOException is thrown.
 	  * The file is scanned once to find the number of lines in the file.
 	  * An IOException is thrown if the number of lines in the file is too small to be split among the given number of file splits.
 	  * Then, the number of file splits is used to calculate the number of lines tow be written to each file.
 	  * The input file is read again and written to a desired number of output files serially.
+	  *
+	  * @param filePath Path to the input file to be split.
+	  * @param numberOfFileSplits Number of output file splits required.
 	  */
 	public static void fixedNumFilesSplit(String filePath, long numberOfFileSplits) 
 		throws IOException {
@@ -105,39 +107,46 @@ public class SplitData {
 
 	/**
 	  * Splits input file into a number of files each of a given size. Executes in parallel.
-	  * @param filePath Path to the input file to be split.
-	  * @param sizeString Size of each split as a string. Can have a trailing K or M signifying the size is in Kilobytes or Megabytes respectively.
-	  * @throws IOException
-	  *
 	  * The method checks if the size has a valid trailing character - K or M.
 	  * If a valid character is found, the size is suitably multipled by a factor.
 	  * Then the overloaded function fixedSizeSplit(String, long) is called with the new size.
 	  * An IOException is thrown if an invalid character is found.
+	  *
+	  * @param filePath Path to the input file to be split.
+	  * @param sizeString Size of each split as a string. Can have a trailing K or M signifying the size is in Kilobytes or Megabytes respectively.
 	  */
 	public static void fixedSizeSplit(String filePath, String sizeString)
 		throws IOException {
 			// Check if size is in Kilobytes
-			if(sizeString.charAt(sizeString.length() - 1) == 'k' || sizeString.charAt(sizeString.length() - 1) == 'K') {
-				fixedSizeSplit(filePath, Long.parseLong(sizeString.substring(0, sizeString.length() - 1)) * 1024);
+			if(sizeString.charAt(sizeString.length() - 1) == 'k' ||
+				sizeString.charAt(sizeString.length() - 1) == 'K') {
+				fixedSizeSplit(filePath, Long.parseLong(
+					sizeString.substring(0, sizeString.length() - 1)) * 1024);
 				return;
 			}
 
 			// Check if size is in MegaBytes
-			if(sizeString.charAt(sizeString.length() - 1) == 'm' || sizeString.charAt(sizeString.length() - 1) == 'M') {
-				fixedSizeSplit(filePath, Long.parseLong(sizeString.substring(0, sizeString.length() - 1)) * 1024 * 1024);
+			if(sizeString.charAt(sizeString.length() - 1) == 'm' ||
+				sizeString.charAt(sizeString.length() - 1) == 'M') {
+				fixedSizeSplit(filePath, Long.parseLong(
+					sizeString.substring(0, sizeString.length() - 1)) * 1024 * 1024);
 				return;
 			}
 
 			// Throw exception if the character is invalid
-			throw new IOException("Bad argument: " + sizeString + " Expected K or M, found: " + sizeString.charAt(sizeString.length() - 1));
+			throw new IOException("Bad argument: " + sizeString + 
+				" Expected K or M, found: " + sizeString.charAt(sizeString.length() - 1));
 	}
 
 	/**
 	  * Splits input file into a number of files each of a given size. Executes in parallel.
+	  * The method finds the size of the file in bytes, then finds the expected number of output files using the size of each file given,
+	  * It spawns an equal number of threads to find their respective start and end bytes in the input file.
+	  * Each thread writes the content it reads to a separate output file.
+	  * The start and end bytes are moved to position them to the next newline character to write a complete record.
+	  *
 	  * @param filePath Path to the input file to be split.
 	  * @param size Size of each split.
-	  * @throws IOException
-	  *
 	  */
 	public static void fixedSizeSplit(String filePath, long size)
 		throws IOException {
@@ -259,13 +268,14 @@ public class SplitData {
 	}
 
 	/**
-	  * Main function, splits data into a give number of files
+	  * Main function, splits data into a give number of files.
+	  *
 	  * @param args Arguments passed to main method. 
 	  * args[0] is the input file. 
 	  * args[1] is the choice between fixed file sizes or fixed number of files.
 	  * args[2] is the number of splits if args[1] was file and size of each split in bytes if args[1] was size.
-	  * args[3] (optional) is the output folder. 
-	  * args[4] (optional) is the file prefix of the output files
+	  * args[3] (optional) is the output folder, default value is output. 
+	  * args[4] (optional) is the file prefix of the output files default value is input_.
 	  */
 	public static void main(String args[]) {
 		// Check number of arguments
