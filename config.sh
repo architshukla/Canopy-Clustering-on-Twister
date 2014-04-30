@@ -18,7 +18,7 @@ cd $TWISTER_HOME/bin
 ./twister.sh rmdir cccenters
 ./twister.sh mkdir cccenters
 echo "Copying canopy centers..."
-./twister.sh put $DIR cccenters canopycenters.txt 1
+./twister.sh put $DIR cccenters canopycenters 1
 
 cd $DIR
 rm canopycenters.txt

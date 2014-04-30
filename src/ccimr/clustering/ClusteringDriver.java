@@ -18,7 +18,7 @@ import ccimr.types.DataPointVector;
 
 public class ClusteringDriver {
 
-	public static String canopyCentersFileLocation = "cccenters/canopycenters.txt";
+	public static String canopyCentersFileLocation = "cccenters/canopycenters";
 
 	/**
 	 * Main program to run Canopy Clustering.
