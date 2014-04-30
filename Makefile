@@ -1,15 +1,17 @@
+# Variables
+PKGPREFIX=$(shell grep 'PKGPREFIX' ccimr.properties | awk '{ print $$3 }')
+SRCPREFIX=$(shell grep 'SRCPREFIX' ccimr.properties | awk '{ print $$3 }')/$(PKGPREFIX)
+
 # Folders
-SRC=src
 BIN=bin
 DIST=dist
-JARFILENAME=canopyclustering_twister.jar
+JARFILENAME=$(shell grep 'JARFILE' ccimr.properties | awk '{ print $$3 }')
 TWISTERJAR=$(TWISTER_HOME)/lib/Twister-0.9.jar
 
-# Folders in SRC
-COMMONFOLDERS=ccimr
-DATAOPERATIONS=$(COMMONFOLDERS)/dataops
-CLUSTERING=$(COMMONFOLDERS)/clustering
-TYPES=$(COMMONFOLDERS)/types
+# Folders in SRCPREFIX
+DATAOPERATIONS=$(SRCPREFIX)/$(shell grep 'DATAOPSDIR' ccimr.properties | awk '{ print $$3 }')
+CLUSTERING=$(SRCPREFIX)/$(shell grep 'CLUSTERINGDIR' ccimr.properties | awk '{ print $$3 }')
+TYPES=$(SRCPREFIX)/$(shell grep 'TYPESDIR' ccimr.properties | awk '{ print $$3 }')
 
 # Build all
 all:	build_dataoperations build_clustering
@@ -19,32 +21,32 @@ all:	build_dataoperations build_clustering
 	mkdir $(DIST)
 
 	mkdir -p $(BIN)/$(DATAOPERATIONS)
-	mv $(SRC)/$(DATAOPERATIONS)/*.class $(BIN)/$(DATAOPERATIONS)/
+	mv $(DATAOPERATIONS)/*.class $(BIN)/$(DATAOPERATIONS)/
 
 	mkdir -p $(BIN)/$(CLUSTERING)
-	mv $(SRC)/$(CLUSTERING)/*.class $(BIN)/$(CLUSTERING)/
+	mv $(CLUSTERING)/*.class $(BIN)/$(CLUSTERING)/
 
 	mkdir -p $(BIN)/$(TYPES)
-	mv $(SRC)/$(TYPES)/*.class $(BIN)/$(TYPES)/
+	mv $(TYPES)/*.class $(BIN)/$(TYPES)/
 
 	jar -cvf $(JARFILENAME) -C $(BIN) .
 	mv $(JARFILENAME) $(DIST)
 
-build_dataoperations:	$(SRC)/$(DATAOPERATIONS)/SplitData.java
-	javac $(SRC)/$(DATAOPERATIONS)/SplitData.java
+build_dataoperations:	$(DATAOPERATIONS)/SplitData.java
+	javac $(DATAOPERATIONS)/SplitData.java
 
-build_clustering:	$(SRC)/$(CLUSTERING)/ClusteringDriver.java \
-					$(SRC)/$(CLUSTERIClusteringMapperTask.java \
-					$(SRC)/$(CLUSTERIClusteringReducerTask.java \
-					$(SRC)/$(CLUSTERING)/ClusteringCombiner.java \
-					$(SRC)/$(TYPES)/DataPoint.java \
-					$(SRC)/$(TYPES)/DataPointVector.java
-	javac -cp $(TWISTERJAR) $(SRC)/$(CLUSTERING)/ClusteringDriver.java \
-		$(SRC)/$(CLUSTERING)/ClusteringMapper.java \
-		$(SRC)/$(CLUSTERING)/ClusteringReducer.java \
-		$(SRC)/$(CLUSTERING)/ClusteringCombiner.java \
-		$(SRC)/$(TYPES)/DataPoint.java \
-		$(SRC)/$(TYPES)/DataPointVector.java
+build_clustering:	$(CLUSTERING)/ClusteringDriver.java \
+					$(CLUSTERING)/ClusteringMapper.java \
+					$(CLUSTERING)/ClusteringReducer.java \
+					$(CLUSTERING)/ClusteringCombiner.java \
+					$(TYPES)/DataPoint.java \
+					$(TYPES)/DataPointVector.java
+	javac -cp $(TWISTERJAR) $(CLUSTERING)/ClusteringDriver.java \
+		$(CLUSTERING)/ClusteringMapper.java \
+		$(CLUSTERING)/ClusteringReducer.java \
+		$(CLUSTERING)/ClusteringCombiner.java \
+		$(TYPES)/DataPoint.java \
+		$(TYPES)/DataPointVector.java
 
 # Clean
 clean:	clean_allcassfiles
@@ -54,4 +56,4 @@ clean:	clean_allcassfiles
 clean_allcassfiles:	clean_dataoperations
 
 clean_dataoperations:
-	if test -f $(SRC)/$(DATAOPERATIONS)/*.class; then rm $(SRC)/$(DATAOPERATIONS)/*.class; fi
+	if test -f $(DATAOPERATIONS)/*.class; then rm $(DATAOPERATIONS)/*.class; fi
